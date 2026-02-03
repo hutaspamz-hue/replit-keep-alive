@@ -1,0 +1,39 @@
+name: Keep Replit Alive 24/7
+on:
+  schedule:
+    # Runs every 3 minutes (maximum frequency for free)
+    - cron: '*/3 * * * *'
+  workflow_dispatch:  # Allows manual trigger
+
+jobs:
+  ping-replit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Replit Endpoint
+        run: |
+          echo "🔄 Pinging Replit at $(date)"
+          
+          # Ping main page
+          curl -s -o /dev/null -w "Main: %{http_code}\n" \
+            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co"
+          
+          # Ping /ping endpoint  
+          curl -s -o /dev/null -w "Ping: %{http_code}\n" \
+            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co/ping"
+          
+          # Add random query to avoid caching
+          curl -s -o /dev/null -w "Random: %{http_code}\n" \
+            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co/?t=$(date +%s)"
+          
+          echo "✅ Ping completed at $(date)"
+          
+      - name: Sleep and ping again
+        run: |
+          # Wait 60 seconds and ping again (creates multiple requests)
+          sleep 60
+          echo "Second ping at $(date)"
+          curl -s -o /dev/null -w "Second: %{http_code}\n" \
+            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co/health"
+          
+      - name: Log success
+        run: echo "🎯 Replit kept alive at $(date)"
