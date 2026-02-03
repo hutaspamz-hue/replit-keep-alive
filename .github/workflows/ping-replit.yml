@@ -1,46 +1,29 @@
 name: 🔄 Keep Replit Alive 24/7
 on:
   schedule:
-    # Run every 2 minutes (maximum for free tier)
+    # Run every 2 minutes
     - cron: '*/2 * * * *'
-  push:
-    branches: [ main ]
-  workflow_dispatch:  # Allows manual run
+  workflow_dispatch:
 
 jobs:
   keep-awake:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Replit Multiple Times
+      - name: Ping Replit Endpoints
         run: |
           echo "⏰ Starting at $(date)"
           
-          # Your ACTUAL Replit URL
           REPLIT_URL="https://profuse-heartfelt-rotation--motivationalqot.replit.app"
           
-          # Make 5 requests with delays (mimics real user)
-          for i in {1..5}; do
-            echo "Request $i to $REPLIT_URL"
-            
-            # Try different endpoints
-            curl -s -o /dev/null -w "Status: %{http_code}\n" \
-              "$REPLIT_URL/" \
-              --max-time 10 \
-              --retry 2 \
-              --retry-delay 1
-            
-            curl -s -o /dev/null -w "Ping: %{http_code}\n" \
-              "$REPLIT_URL/ping" \
-              --max-time 10
-            
-            curl -s -o /dev/null -w "Health: %{http_code}\n" \
-              "$REPLIT_URL/health" \
-              --max-time 10
-            
-            # Wait between requests
-            if [ $i -lt 5 ]; then
-              sleep 15
-            fi
-          done
+          # Ping 5 different endpoints
+          curl -s -o /dev/null -w "Main: %{http_code}\n" "$REPLIT_URL/"
+          sleep 3
+          curl -s -o /dev/null -w "Ping: %{http_code}\n" "$REPLIT_URL/ping"
+          sleep 3
+          curl -s -o /dev/null -w "Health: %{http_code}\n" "$REPLIT_URL/health"
+          sleep 3
+          curl -s -o /dev/null -w "Keep-alive: %{http_code}\n" "$REPLIT_URL/keep-alive"
+          sleep 3
+          curl -s -o /dev/null -w "GitHub: %{http_code}\n" "$REPLIT_URL/github-actions"
           
           echo "✅ Completed at $(date)"
