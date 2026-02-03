@@ -1,39 +1,46 @@
-name: Keep Replit Alive 24/7
+name: 🔄 Keep Replit Alive 24/7
 on:
   schedule:
-    # Runs every 3 minutes (maximum frequency for free)
-    - cron: '*/3 * * * *'
-  workflow_dispatch:  # Allows manual trigger
+    # Run every 2 minutes (maximum for free tier)
+    - cron: '*/2 * * * *'
+  push:
+    branches: [ main ]
+  workflow_dispatch:  # Allows manual run
 
 jobs:
-  ping-replit:
+  keep-awake:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Replit Endpoint
+      - name: Ping Replit Multiple Times
         run: |
-          echo "🔄 Pinging Replit at $(date)"
+          echo "⏰ Starting at $(date)"
           
-          # Ping main page
-          curl -s -o /dev/null -w "Main: %{http_code}\n" \
-            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co"
+          # Your ACTUAL Replit URL
+          REPLIT_URL="https://profuse-heartfelt-rotation--motivationalqot.replit.app"
           
-          # Ping /ping endpoint  
-          curl -s -o /dev/null -w "Ping: %{http_code}\n" \
-            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co/ping"
+          # Make 5 requests with delays (mimics real user)
+          for i in {1..5}; do
+            echo "Request $i to $REPLIT_URL"
+            
+            # Try different endpoints
+            curl -s -o /dev/null -w "Status: %{http_code}\n" \
+              "$REPLIT_URL/" \
+              --max-time 10 \
+              --retry 2 \
+              --retry-delay 1
+            
+            curl -s -o /dev/null -w "Ping: %{http_code}\n" \
+              "$REPLIT_URL/ping" \
+              --max-time 10
+            
+            curl -s -o /dev/null -w "Health: %{http_code}\n" \
+              "$REPLIT_URL/health" \
+              --max-time 10
+            
+            # Wait between requests
+            if [ $i -lt 5 ]; then
+              sleep 15
+            fi
+          done
           
-          # Add random query to avoid caching
-          curl -s -o /dev/null -w "Random: %{http_code}\n" \
-            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co/?t=$(date +%s)"
-          
-          echo "✅ Ping completed at $(date)"
-          
-      - name: Sleep and ping again
-        run: |
-          # Wait 60 seconds and ping again (creates multiple requests)
-          sleep 60
-          echo "Second ping at $(date)"
-          curl -s -o /dev/null -w "Second: %{http_code}\n" \
-            "https://ProfuseHeartfeltRotation.motivationalqot.repl.co/health"
-          
-      - name: Log success
-        run: echo "🎯 Replit kept alive at $(date)"
+          echo "✅ Completed at $(date)"
